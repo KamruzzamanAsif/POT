@@ -13,7 +13,7 @@ def add_eco_ci_steps(yaml_data):
         
         steps.insert(0, {
             "name": "Start Energy Measurement",
-            "uses": "green-coding-solutions/eco-ci-energy-estimation@v4",
+            "uses": "green-coding-solutions/eco-ci-energy-estimation@862050e4f01f65b1436e5eca18ba4bd85562f0de",
             "with": {"task": "start-measurement", "json-output": True}
         })
         
@@ -24,24 +24,24 @@ def add_eco_ci_steps(yaml_data):
                 new_steps.append({
                     "name": f"Record Measurement After {step.get('name', 'Step')}",
                     "id": f"measurement-{len(new_steps)}",
-                    "uses": "green-coding-solutions/eco-ci-energy-estimation@v4",
+                    "uses": "green-coding-solutions/eco-ci-energy-estimation@862050e4f01f65b1436e5eca18ba4bd85562f0de",
                     "with": {"task": "get-measurement", "label": step.get('name', 'Step'), "json-output": True}
                 })
         
         new_steps.append({
             "name": "Display Energy Results",
             "id": "display-measurement",
-            "uses": "green-coding-solutions/eco-ci-energy-estimation@v4",
+            "uses": "green-coding-solutions/eco-ci-energy-estimation@862050e4f01f65b1436e5eca18ba4bd85562f0de",
             "with": {"task": "display-results", "json-output": True}
         })
         new_steps.append({
             "name": "Save Total Energy Consumption Data",
-            "run": "echo '${{ steps.final-measurement.outputs.data-total-json }}' > total_energy_consumption-${{ github.run_id }}.json"
+            "run": "echo '${{ steps.final-measurement.outputs.data-total-json }}' > total_energy_consumption.json"
         })
         new_steps.append({
             "name": "Upload Energy Consumption Artifact",
             "uses": "actions/upload-artifact@v4",
-            "with": {"name": "total-energy-consumption", "path": "total_energy_consumption-${{ github.run_id }}.json"}
+            "with": {"name": "total-energy-consumption", "path": "total_energy_consumption.json"}
         })
         
         job["steps"] = new_steps
@@ -60,6 +60,7 @@ def write_yaml_with_header(file, data):
     file.write("      - main\n\n")
     
     if 'name' in data:
+        
         del data['name']
     if 'on' in data:
         del data['on']
@@ -68,7 +69,7 @@ def write_yaml_with_header(file, data):
 
 def process_all_yaml_files(directory):
     for filename in os.listdir(directory):
-        if filename.endswith(".yml"):
+        if filename.endswith(".yml") or filename.endswith(".yaml") :
             filepath = os.path.join(directory, filename)
             
             with open(filepath, "r") as file:
