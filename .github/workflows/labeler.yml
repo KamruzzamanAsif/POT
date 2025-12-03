@@ -1,15 +1,34 @@
-name: "Pull Request Labeler"
-
+name: Pull Request Labeler
 on:
-  pull_request_target:
+  push:
     branches:
-      - 'master'
+      - main
+
 jobs:
   labeler:
     permissions:
       contents: read
-      pull-requests: write
       issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/labeler@v5
+      - name: Start Energy Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: start-measurement
+      - uses: actions/labeler@v5
+      - id: display-measurement
+        name: Display Energy Results
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: display-results
+      - name: Save Total Energy Consumption Data
+        run: echo '${{ steps.final-measurement.outputs.data-total-json }}' > total_energy_consumption-${{
+          github.run_id }}.json
+      - name: Upload Energy Consumption Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-energy-consumption
+          path: total_energy_consumption-${{ github.run_id }}.json

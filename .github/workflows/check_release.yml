@@ -1,9 +1,9 @@
-name: "Check updated RELEASES.md file"
-
+name: Check updated RELEASES.md file
 on:
-  pull_request:
+  push:
     branches:
-      - 'master'
+      - main
+
 jobs:
   check_release_file:
     permissions:
@@ -11,11 +11,37 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: Verify Changed files
-        uses: tj-actions/changed-files@v45
-        id: changed-release-file
+      - name: Start Energy Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
         with:
-          files: 'RELEASES.md'
-      - name: Check if RELEASES.md file is changed
-        if: steps.changed-release-file.outputs.any_changed == 'false'
+          json-output: true
+          task: start-measurement
+      - id: changed-release-file
+        name: Verify Changed files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: RELEASES.md
+      - if: steps.changed-release-file.outputs.any_changed == 'false'
+        name: Check if RELEASES.md file is changed
         run: exit 1
+      - id: measurement-3
+        name: Record Measurement After Check if RELEASES.md file is changed
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Check if RELEASES.md file is changed
+          task: get-measurement
+      - id: display-measurement
+        name: Display Energy Results
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: display-results
+      - name: Save Total Energy Consumption Data
+        run: echo '${{ steps.final-measurement.outputs.data-total-json }}' > total_energy_consumption-${{
+          github.run_id }}.json
+      - name: Upload Energy Consumption Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-energy-consumption
+          path: total_energy_consumption-${{ github.run_id }}.json

@@ -387,9 +387,7 @@ jobs:
           label: Install dependencies
           task: get-measurement
       - name: Run tests
-        run: 'python -m pytest --durations=20  -v test/ ot/ --color=yes
-
-          '
+        run: python -m pytest --durations=20  -v test/ ot/ --color=yes
       - id: measurement-12
         name: Record Measurement After Run tests
         uses: green-coding-solutions/eco-ci-energy-estimation@v4
